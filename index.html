@@ -256,6 +256,7 @@
       .canvas-side {
         border-left: 2px solid black;
         border-bottom: 2px solid black;
+        position: relative;
       }
 
       .material-side {
@@ -425,6 +426,24 @@
         padding: 0;
         height: 25px;
       }
+
+      .canvas__watermark {
+        height: 500px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: -1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .canvas__watermark-image {
+        width: 400px;
+        opacity: 0.2;
+      }
     </style>
   </head>
 
@@ -453,7 +472,7 @@
     <div class="form-wrapper">
       <form>
         <div class="header-container">
-          <!-- <img class="header-logo" src="./img/logo.svg" alt="logo" /> -->
+          <!-- <img class="header-logo" src="./img/logo-blue-no-bg.png" alt="logo" /> -->
           <div class="header-logo">
             <p>Your logo here</p>
           </div>
@@ -491,6 +510,13 @@
         <div class="section2">
           <div class="canvas-side">
             <canvas id="canvas"></canvas>
+            <div class="canvas__watermark">
+              <img
+                src="./img/logo-blue-no-bg.png"
+                alt="logo watermark"
+                class="canvas__watermark-image"
+              />
+            </div>
             <div class="tools-bar">
               <select id="tool-select">
                 <option value="gutter">Gutter</option>
