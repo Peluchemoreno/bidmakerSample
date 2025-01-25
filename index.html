@@ -28,47 +28,73 @@
         position: relative;
       }
 
-      .module-container {
-        background-color: rgb(221, 221, 221);
-        padding: 10px;
-        min-width: 250px;
-        max-width: 500px;
-        border-radius: 5px;
-        animation: slideIn 0.3s ease-in-out;
+      .modal {
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.6);
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s ease, visiblity 0.2s ease;
+        z-index: 3;
       }
 
-      .module-header {
+      .modal_visible {
         display: flex;
-        font-weight: bold;
-        justify-content: space-between;
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.6);
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        justify-content: center;
         align-items: center;
-        background: linear-gradient(to right, #7a7a7a, #383838);
-        border-radius: 5px;
-        padding: 10px;
+        visibility: visible;
+        opacity: 1;
+        transition: opacity 0.2s ease, visiblity 0.2s ease;
       }
 
-      .module-body {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        gap: 10px;
-        padding: 10px;
-        margin-top: 25px;
+      .modal__container {
+        padding: 20px;
+        border: 1px solid black;
+        background-color: #414141;
+        color: white;
+        max-width: 50%;
       }
 
-      .module-footer {
+      .container__input {
+        width: 100%;
+        margin-top: 20px;
+        color: black;
+      }
+
+      .container__buttons {
         display: flex;
-        justify-content: space-around;
-        margin-top: 25px;
+        justify-content: flex-end;
+        gap: 20px;
+        margin-top: 20px;
       }
 
-      @keyframes slideIn {
-        0% {
-          transform: translateY(-600px);
-        }
+      .container__title {
+        font-size: 1.25rem;
+      }
 
-        100% {
-          transform: translateY(0px);
-        }
+      .button {
+        padding: 5px 15px;
+        border: none;
+        cursor: pointer;
+      }
+
+      .button_confirm {
+        background-color: #26e600;
+      }
+
+      .button_cancel {
+        background-color: rgb(240, 90, 90);
       }
 
       .cancel-button,
@@ -448,24 +474,15 @@
   </head>
 
   <body>
-    <div class="module">
-      <div class="module-container">
-        <div class="module-header">
-          <p style="font-size: 16px">Selected Color:</p>
-          <div class="color-preview"></div>
-        </div>
-        <div class="module-body">
-          <button class="selector-button red">Red</button>
-          <button class="selector-button cyan">Cyan</button>
-          <button class="selector-button blue">Blue</button>
-          <button class="selector-button green">Green</button>
-          <button class="selector-button pink">Pink</button>
-          <button class="selector-button yellow">Yellow</button>
-          <button class="selector-button black">Black</button>
-        </div>
-        <div class="module-footer">
-          <button class="cancel-button">Cancel</button>
-          <button class="set-button">Set</button>
+    <div class="modal">
+      <div class="modal__container">
+        <h2 class="container__title">
+          Type in the elbow sequence or the length of the piece. (ex: AABA, 57")
+        </h2>
+        <input id="textinput" type="text" class="container__input" />
+        <div class="container__buttons">
+          <button type="button" class="button button_cancel">Cancel</button>
+          <button type="button" class="button button_confirm">OK</button>
         </div>
       </div>
     </div>
@@ -760,6 +777,10 @@
       const colorPicker = document.querySelector("#color");
       const gridSizeInput = document.querySelector("#grid-size");
       const tool = document.querySelector("#tool-select");
+      const textInputEl = document.querySelector(".container__input");
+      const cancelBtn = document.querySelector(".button_cancel");
+      const confirmBtn = document.querySelector(".button_confirm");
+      const modal = document.querySelector(".modal");
 
       let isDrawing = false;
       let startX, startY, currentX, currentY;
@@ -907,18 +928,10 @@
             ctx.fill();
             addToUndoStack();
           } else if (tool.value === "free-text") {
-            let userInput = prompt(
-              'Type in the elbow sequence or the length of the piece. (ex: AABA, 57")'
-            );
-            ctx.font = "1000 12px Arial";
-            ctx.fillStyle = "black";
-            ctx.textAlign = "center";
-            if (!userInput) {
-              return;
-            } else {
-              ctx.fillText(`${userInput}`, startX, startY);
-              addToUndoStack();
-            }
+            modal.classList.add("modal_visible");
+            // let userInput = prompt(
+            //   'Type in the elbow sequence or the length of the piece. (ex: AABA, 57")'
+            // );
           } else {
             ctx.beginPath();
             ctx.moveTo(startX, startY);
@@ -969,11 +982,35 @@
         undoBtn.style.backgroundColor = paths.length > 0 ? "silver" : "#d9f170";
       }
 
+      function placeText(x, y) {
+        const userInput = textInputEl.value;
+        ctx.font = "1000 12px Arial";
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        if (!userInput) {
+          return;
+        } else {
+          ctx.fillText(`${userInput}`, x, y);
+          addToUndoStack();
+        }
+        textInputEl.value = "";
+        modal.classList.remove("modal_visible");
+      }
+
       // Add event listeners
       canvas.addEventListener("pointerdown", startDrawing);
       canvas.addEventListener("pointermove", drawRubberLine);
       canvas.addEventListener("pointerup", stopDrawing);
       canvas.addEventListener("pointerout", stopDrawing);
+
+      cancelBtn.addEventListener("click", (e) => {
+        modal.classList.remove("modal_visible");
+        textInputEl.value = "";
+      });
+
+      confirmBtn.addEventListener("click", (e) => {
+        placeText(startX, startY);
+      });
 
       // Add touch events for mobile and tablets
       canvas.addEventListener("touchstart", (event) => {
@@ -993,7 +1030,6 @@
       // Initialize on DOMContentLoaded
       document.addEventListener("DOMContentLoaded", startup);
       document.addEventListener("keydown", (e) => {
-        e.preventDefault();
         if (e.key === "Escape") {
           undo();
         }
